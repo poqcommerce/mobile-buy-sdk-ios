@@ -592,7 +592,8 @@ NSString * const BUYVersionString = @"1.2";
 		else {
 			//2 is the minimum amount of data {} for a JSON Object. Just ignore anything less.
 			if ((error == nil || failedValidation) && [data length] > 2) {
-				id jsonData = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+				id jsonData = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves | NSJSONReadingMutableContainers error:&error];
+				[self removeNullFromObject:jsonData];
 				json = [jsonData isKindOfClass:[NSDictionary class]] ? jsonData : nil;
 			}
 			
@@ -606,6 +607,37 @@ NSString * const BUYVersionString = @"1.2";
 	}];
 	[self startTask:task];
 	return task;
+}
+
+- (void)removeNullFromObject:(id)object
+{
+	if ([object isKindOfClass:[NSMutableDictionary class]]) {
+		NSMutableDictionary *dictionary = (NSMutableDictionary *)object;
+		NSMutableArray *keys = [NSMutableArray array];
+		for (NSString *key in [dictionary allKeys]) {
+			NSObject *value = dictionary[key];
+			if ([value isKindOfClass:[NSNull class]]) {
+				[keys addObject:key];
+			} else if ([value isKindOfClass:[NSMutableArray class]] || [value isKindOfClass:[NSMutableDictionary class]]) {
+				[self removeNullFromObject:value];
+			}
+		}
+		[dictionary removeObjectsForKeys:keys];
+		
+	} else if ([object isKindOfClass:[NSMutableArray class]]) {
+		NSMutableArray *array = (NSMutableArray *)object;
+		NSMutableIndexSet *indexes = [NSMutableIndexSet indexSet];
+		for (NSUInteger i = 0; i < array.count; i++ ) {
+			NSObject *object = array[i];
+			if ([object isKindOfClass:[NSNull class]]) {
+				[indexes addIndex:i];
+			} else if ([object isKindOfClass:[NSMutableArray class]] || [object isKindOfClass:[NSMutableDictionary class]]) {
+				[self removeNullFromObject:object];
+			}
+		}
+		
+		[array removeObjectsAtIndexes:indexes];
+	}
 }
 
 - (NSURLSessionDataTask *)postPaymentRequestWithCheckout:(BUYCheckout *)checkout body:(NSData *)body completion:(BUYDataCreditCardBlock)block
