@@ -164,6 +164,8 @@
 			address.address1 = BUYPartialAddressPlaceholder;
 		}
 		
+		address.address2 = BUYPartialAddressPlaceholder;
+		
 		address.city = (__bridge NSString *)CFDictionaryGetValue(firstAddress, kABPersonAddressCityKey);
 		address.province = (__bridge NSString *)CFDictionaryGetValue(firstAddress, kABPersonAddressStateKey);
 		address.zip = (__bridge NSString *)CFDictionaryGetValue(firstAddress, kABPersonAddressZIPKey);
