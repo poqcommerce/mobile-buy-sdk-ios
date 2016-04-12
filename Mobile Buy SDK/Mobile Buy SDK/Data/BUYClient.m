@@ -67,6 +67,8 @@ NSString * const BUYVersionString = @"1.2.1";
 
 @end
 
+
+
 @implementation BUYClient
 
 - (instancetype)init { return nil; }
@@ -85,12 +87,9 @@ NSString * const BUYVersionString = @"1.2.1";
 		self.channelId = channelId;
 		self.applicationName = [[NSBundle mainBundle] infoDictionary][@"CFBundleName"] ?: @"";
 		self.queue = dispatch_get_main_queue();
-		
-		NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
-		// ensure requests are sent serially
-		config.HTTPMaximumConnectionsPerHost = 1;
-		config.HTTPAdditionalHeaders = @{@"User-Agent": [NSString stringWithFormat:@"Mobile Buy SDK iOS/%@", BUYVersionString]};
-		
+
+        NSURLSessionConfiguration *config = [NSURLSessionConfiguration buyClientSessionConfiguration];
+
 		self.session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:nil];
 		self.pageSize = 25;
 	}
@@ -720,6 +719,25 @@ NSString * const BUYVersionString = @"1.2.1";
 - (void)enableApplePayWithMerchantId:(NSString *)merchantId
 {
 	self.merchantId = merchantId;
+}
+
+@end
+
+static NSURLSessionConfiguration *sConfiguration = nil;
+
+@implementation NSURLSessionConfiguration (BUYClient)
+
++ (NSURLSessionConfiguration *)buyClientSessionConfiguration
+{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sConfiguration = [NSURLSessionConfiguration defaultSessionConfiguration];
+        // ensure requests are sent serially
+        sConfiguration.HTTPMaximumConnectionsPerHost = 1;
+        sConfiguration.HTTPAdditionalHeaders = @{@"User-Agent": [NSString stringWithFormat:@"Mobile Buy SDK iOS/%@", BUYVersionString]};
+    });
+    
+    return sConfiguration;
 }
 
 @end
