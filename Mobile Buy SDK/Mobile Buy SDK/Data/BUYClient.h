@@ -518,4 +518,11 @@ typedef void (^BUYDataGiftCardBlock)(BUYGiftCard *giftCard, NSError *error);
  */
 - (void)enableApplePayWithMerchantId:(NSString *)merchantId DEPRECATED_MSG_ATTRIBUTE("Set the merchantId on a BUYViewController subclass instead");
 
-@end 
+@end
+
+
+@interface NSURLSessionConfiguration (BUYClient)
+
++ (NSURLSessionConfiguration *)buyClientSessionConfiguration;
+
+@end
